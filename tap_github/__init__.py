@@ -953,8 +953,12 @@ def do_sync(config, state, catalog):
 
                 # sync stream
                 if not sub_stream_ids:
-                    state = sync_func(stream_schema, repo, state, mdata)
-
+                    try:
+                        state = sync_func(stream_schema, repo, state, mdata)
+                    except Exception as e:
+                        # Write the previous state before exiting with error
+                        singer.write_state(state)
+                        raise
                 # handle streams with sub streams
                 else:
                     stream_schemas = {stream_id: stream_schema}
@@ -968,7 +972,12 @@ def do_sync(config, state, catalog):
                                                 sub_stream['key_properties'])
 
                     # sync stream and it's sub streams
-                    state = sync_func(stream_schemas, repo, state, mdata)
+                    try:
+                        state = sync_func(stream_schemas, repo, state, mdata)
+                    except Exception as e:
+                        # Write the previous state before exiting with error
+                        singer.write_state(state)
+                        raise
 
                 singer.write_state(state)
 
