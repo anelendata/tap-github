@@ -957,7 +957,8 @@ def do_sync(config, state, catalog):
                         state = sync_func(stream_schema, repo, state, mdata)
                     except Exception as e:
                         # Write the previous state before exiting with error
-                        singer.write_state(state)
+                        if state:
+                            singer.write_state(state)
                         raise
                 # handle streams with sub streams
                 else:
@@ -976,7 +977,8 @@ def do_sync(config, state, catalog):
                         state = sync_func(stream_schemas, repo, state, mdata)
                     except Exception as e:
                         # Write the previous state before exiting with error
-                        singer.write_state(state)
+                        if state:
+                            singer.write_state(state)
                         raise
 
                 singer.write_state(state)
