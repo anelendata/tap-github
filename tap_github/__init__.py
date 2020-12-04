@@ -1,7 +1,9 @@
 import argparse
+import logging
 import os
 import json
 import collections
+import shutil
 import requests
 import singer
 import singer.bookmarks as bookmarks
@@ -10,7 +12,15 @@ import singer.metrics as metrics
 from singer import metadata
 
 session = requests.Session()
-logger = singer.get_logger()
+
+# An ugly fix to suppress excessive logging by singer
+src_dir, _ = os.path.split(__file__)
+dest_dir, _ = os.path.split(singer.__file__)
+shutil.copyfile(os.path.join(src_dir, "logging.conf"),
+                os.path.join(dest_dir, "logging.conf"))
+# But let this tap's log appear
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 REQUIRED_CONFIG_KEYS = ['access_token', 'repository']
 
@@ -100,6 +110,7 @@ def get_bookmark(state, repo, stream_name, bookmark_key):
 def authed_get(source, url, headers={}):
     with metrics.http_request_timer(source) as timer:
         session.headers.update(headers)
+        logger.info(f"GET {url}")
         resp = session.request(method='get', url=url)
         if resp.status_code == 401:
             raise AuthException(resp.text)
