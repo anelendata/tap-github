@@ -234,7 +234,7 @@ def get_all_teams(schemas, repo_path, state, mdata):
     with metrics.record_counter('teams') as counter:
         for response in authed_get_all_pages(
                 'teams',
-                'https://api.github.com/orgs/{}/teams?sort=created_at&direction=desc'.format(org)
+                'https://api.github.com/orgs/{}/teams?sort=created_at&direction=desc&per_page=100'.format(org)
         ):
             teams = response.json()
             extraction_time = singer.utils.now()
@@ -267,7 +267,7 @@ def get_all_team_members(team_slug, schemas, repo_path, state, mdata):
     with metrics.record_counter('team_members') as counter:
         for response in authed_get_all_pages(
                 'team_members',
-                'https://api.github.com/orgs/{}/teams/{}/members?sort=created_at&direction=desc'.format(org, team_slug)
+                'https://api.github.com/orgs/{}/teams/{}/members?sort=created_at&direction=desc&per_page=100'.format(org, team_slug)
         ):
             team_members = response.json()
             for r in team_members:
@@ -286,7 +286,7 @@ def get_all_team_memberships(team_slug, schemas, repo_path, state, mdata):
     org = repo_path.split('/')[0]
     for response in authed_get_all_pages(
             'team_members',
-            'https://api.github.com/orgs/{}/teams/{}/members?sort=created_at&direction=desc'.format(org, team_slug)
+            'https://api.github.com/orgs/{}/teams/{}/members?sort=created_at&direction=desc&per_page=100'.format(org, team_slug)
         ):
         team_members = response.json()
         with metrics.record_counter('team_memberships') as counter:
@@ -294,7 +294,7 @@ def get_all_team_memberships(team_slug, schemas, repo_path, state, mdata):
                 username = r['login']
                 for res in authed_get_all_pages(
                         'memberships',
-                        'https://api.github.com/orgs/{}/teams/{}/memberships/{}'.format(org, team_slug, username)
+                        'https://api.github.com/orgs/{}/teams/{}/memberships/{}?per_page=100'.format(org, team_slug, username)
                 ):
                     team_membership = res.json()
                     team_membership['_sdc_repository'] = repo_path
@@ -316,7 +316,7 @@ def get_all_issue_events(schemas, repo_path, state, mdata):
     with metrics.record_counter('issue_events') as counter:
         for response in authed_get_all_pages(
                 'issue_events',
-                'https://api.github.com/repos/{}/issues/events?sort=created_at&direction=desc'.format(repo_path)
+                'https://api.github.com/repos/{}/issues/events?sort=created_at&direction=desc&per_page=100'.format(repo_path)
         ):
             events = response.json()
             extraction_time = singer.utils.now()
@@ -354,7 +354,7 @@ def get_all_events(schemas, repo_path, state, mdata):
     with metrics.record_counter('events') as counter:
         for response in authed_get_all_pages(
                 'events',
-                'https://api.github.com/repos/{}/events?sort=created_at&direction=desc'.format(repo_path)
+                'https://api.github.com/repos/{}/events?sort=created_at&direction=desc&per_page=100'.format(repo_path)
         ):
             events = response.json()
             extraction_time = singer.utils.now()
@@ -391,7 +391,7 @@ def get_all_issue_milestones(schemas, repo_path, state, mdata):
     with metrics.record_counter('issue_milestones') as counter:
         for response in authed_get_all_pages(
                 'milestones',
-                'https://api.github.com/repos/{}/milestones?direction=desc'.format(repo_path)
+                'https://api.github.com/repos/{}/milestones?direction=desc&per_page=100'.format(repo_path)
         ):
             milestones = response.json()
             extraction_time = singer.utils.now()
@@ -422,7 +422,7 @@ def get_all_issue_labels(schemas, repo_path, state, mdata):
     with metrics.record_counter('issue_labels') as counter:
         for response in authed_get_all_pages(
                 'issue_labels',
-                'https://api.github.com/repos/{}/labels'.format(repo_path)
+                'https://api.github.com/repos/{}/labels?per_page=100'.format(repo_path)
         ):
             issue_labels = response.json()
             extraction_time = singer.utils.now()
@@ -451,7 +451,7 @@ def get_all_commit_comments(schemas, repo_path, state, mdata):
     with metrics.record_counter('commit_comments') as counter:
         for response in authed_get_all_pages(
                 'commit_comments',
-                'https://api.github.com/repos/{}/comments?sort=created_at&direction=desc'.format(repo_path)
+                'https://api.github.com/repos/{}/comments?sort=created_at&direction=desc&per_page=100'.format(repo_path)
         ):
             commit_comments = response.json()
             extraction_time = singer.utils.now()
@@ -485,7 +485,7 @@ def get_all_projects(schemas, repo_path, state, mdata):
         #pylint: disable=too-many-nested-blocks
         for response in authed_get_all_pages(
                 'projects',
-                'https://api.github.com/repos/{}/projects?sort=created_at&direction=desc'.format(repo_path),
+                'https://api.github.com/repos/{}/projects?sort=created_at&direction=desc&per_page=100'.format(repo_path),
                 { 'Accept': 'application/vnd.github.inertia-preview+json' }
         ):
             projects = response.json()
@@ -536,7 +536,7 @@ def get_all_project_cards(column_id, schemas, repo_path, state, mdata):
     with metrics.record_counter('project_cards') as counter:
         for response in authed_get_all_pages(
                 'project_cards',
-                'https://api.github.com/projects/columns/{}/cards?sort=created_at&direction=desc'.format(column_id)
+                'https://api.github.com/projects/columns/{}/cards?sort=created_at&direction=desc&per_page=100'.format(column_id)
         ):
             project_cards = response.json()
             for r in project_cards:
@@ -567,7 +567,7 @@ def get_all_project_columns(project_id, schemas, repo_path, state, mdata):
     with metrics.record_counter('project_columns') as counter:
         for response in authed_get_all_pages(
                 'project_columns',
-                'https://api.github.com/projects/{}/columns?sort=created_at&direction=desc'.format(project_id)
+                'https://api.github.com/projects/{}/columns?sort=created_at&direction=desc&per_page=100'.format(project_id)
         ):
             project_columns = response.json()
             for r in project_columns:
@@ -596,7 +596,7 @@ def get_all_releases(schemas, repo_path, state, mdata):
     with metrics.record_counter('releases') as counter:
         for response in authed_get_all_pages(
                 'releases',
-                'https://api.github.com/repos/{}/releases?sort=created_at&direction=desc'.format(repo_path)
+                'https://api.github.com/repos/{}/releases?sort=created_at&direction=desc&per_page=100'.format(repo_path)
         ):
             releases = response.json()
             extraction_time = singer.utils.now()
@@ -627,7 +627,7 @@ def get_all_pull_requests(schemas, repo_path, state, mdata):
         with metrics.record_counter('reviews') as reviews_counter:
             for response in authed_get_all_pages(
                     'pull_requests',
-                    'https://api.github.com/repos/{}/pulls?state=all&sort=updated&direction=desc'.format(repo_path)
+                    'https://api.github.com/repos/{}/pulls?state=all&sort=updated&direction=desc&per_page=100'.format(repo_path)
             ):
                 pull_requests = response.json()
                 extraction_time = singer.utils.now()
@@ -683,7 +683,7 @@ def get_all_pull_requests(schemas, repo_path, state, mdata):
 def get_reviews_for_pr(pr_number, schema, repo_path, state, mdata):
     for response in authed_get_all_pages(
             'reviews',
-            'https://api.github.com/repos/{}/pulls/{}/reviews'.format(repo_path,pr_number)
+            'https://api.github.com/repos/{}/pulls/{}/reviews?per_page=100'.format(repo_path,pr_number)
     ):
         reviews = response.json()
         for review in reviews:
@@ -698,7 +698,7 @@ def get_reviews_for_pr(pr_number, schema, repo_path, state, mdata):
 def get_review_comments_for_pr(pr_number, schema, repo_path, state, mdata):
     for response in authed_get_all_pages(
             'comments',
-            'https://api.github.com/repos/{}/pulls/{}/comments'.format(repo_path,pr_number)
+            'https://api.github.com/repos/{}/pulls/{}/comments?per_page=100'.format(repo_path,pr_number)
     ):
         review_comments = response.json()
         for comment in review_comments:
@@ -713,7 +713,7 @@ def get_review_comments_for_pr(pr_number, schema, repo_path, state, mdata):
 def get_commits_for_pr(pr_number, pr_id, schema, repo_path, state, mdata):
     for response in authed_get_all_pages(
             'pr_commits',
-            'https://api.github.com/repos/{}/pulls/{}/commits'.format(repo_path,pr_number)
+            'https://api.github.com/repos/{}/pulls/{}/commits?per_page=100'.format(repo_path,pr_number)
     ):
 
         commit_data = response.json()
@@ -736,7 +736,7 @@ def get_all_assignees(schema, repo_path, state, mdata):
     with metrics.record_counter('assignees') as counter:
         for response in authed_get_all_pages(
                 'assignees',
-                'https://api.github.com/repos/{}/assignees'.format(repo_path)
+                'https://api.github.com/repos/{}/assignees?per_page=100'.format(repo_path)
         ):
             assignees = response.json()
             extraction_time = singer.utils.now()
@@ -757,7 +757,7 @@ def get_all_collaborators(schema, repo_path, state, mdata):
     with metrics.record_counter('collaborators') as counter:
         for response in authed_get_all_pages(
                 'collaborators',
-                'https://api.github.com/repos/{}/collaborators'.format(repo_path)
+                'https://api.github.com/repos/{}/collaborators?per_page=100'.format(repo_path)
         ):
             collaborators = response.json()
             extraction_time = singer.utils.now()
@@ -777,9 +777,9 @@ def get_all_commits(schema, repo_path,  state, mdata):
     '''
     bookmark = get_bookmark(state, repo_path, "commits", "since")
     if bookmark:
-        query_string = '?since={}'.format(bookmark)
+        query_string = '?since={}&per_page=100'.format(bookmark)
     else:
-        query_string = ''
+        query_string = '?per_page=100'
 
     with metrics.record_counter('commits') as counter:
         for response in authed_get_all_pages(
@@ -812,7 +812,7 @@ def get_all_issues(schema, repo_path,  state, mdata):
     with metrics.record_counter('issues') as counter:
         for response in authed_get_all_pages(
                 'issues',
-                'https://api.github.com/repos/{}/issues?state=all&sort=updated&direction=asc{}'.format(repo_path, query_string)
+                'https://api.github.com/repos/{}/issues?state=all&sort=updated&direction=asc{}&per_page=100'.format(repo_path, query_string)
         ):
             issues = response.json()
             extraction_time = singer.utils.now()
@@ -839,7 +839,7 @@ def get_all_comments(schema, repo_path, state, mdata):
     with metrics.record_counter('comments') as counter:
         for response in authed_get_all_pages(
                 'comments',
-                'https://api.github.com/repos/{}/issues/comments?sort=updated&direction=asc{}'.format(repo_path, query_string)
+                'https://api.github.com/repos/{}/issues/comments?sort=updated&direction=asc{}&per_page=100'.format(repo_path, query_string)
         ):
             comments = response.json()
             extraction_time = singer.utils.now()
@@ -867,7 +867,7 @@ def get_all_stargazers(schema, repo_path, state, mdata):
     with metrics.record_counter('stargazers') as counter:
         for response in authed_get_all_pages(
                 'stargazers',
-                'https://api.github.com/repos/{}/stargazers?sort=updated&direction=asc{}'.format(repo_path, query_string), stargazers_headers
+                'https://api.github.com/repos/{}/stargazers?sort=updated&direction=asc{}&per_page=100'.format(repo_path, query_string), stargazers_headers
         ):
             stargazers = response.json()
             extraction_time = singer.utils.now()
