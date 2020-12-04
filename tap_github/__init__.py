@@ -4,6 +4,7 @@ import os
 import json
 import collections
 import shutil
+from time import sleep
 import requests
 import singer
 import singer.bookmarks as bookmarks
@@ -110,7 +111,6 @@ def get_bookmark(state, repo, stream_name, bookmark_key):
 def authed_get(source, url, headers={}):
     with metrics.http_request_timer(source) as timer:
         session.headers.update(headers)
-        logger.info(f"GET {url}")
         resp = session.request(method='get', url=url)
         if resp.status_code == 401:
             raise AuthException(resp.text)
@@ -131,6 +131,8 @@ def authed_get_all_pages(source, url, headers={}):
             url = r.links['next']['url']
         else:
             break
+        # Decrease the chance of hitting the rate limit sacrificing speed a bit
+        sleep(1.0)
 
 def get_abs_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
@@ -964,13 +966,7 @@ def do_sync(config, state, catalog):
 
                 # sync stream
                 if not sub_stream_ids:
-                    try:
-                        state = sync_func(stream_schema, repo, state, mdata)
-                    except Exception as e:
-                        # Write the previous state before exiting with error
-                        if state:
-                            singer.write_state(state)
-                        raise
+                    state = sync_func(stream_schema, repo, state, mdata)
                 # handle streams with sub streams
                 else:
                     stream_schemas = {stream_id: stream_schema}
@@ -984,13 +980,7 @@ def do_sync(config, state, catalog):
                                                 sub_stream['key_properties'])
 
                     # sync stream and it's sub streams
-                    try:
-                        state = sync_func(stream_schemas, repo, state, mdata)
-                    except Exception as e:
-                        # Write the previous state before exiting with error
-                        if state:
-                            singer.write_state(state)
-                        raise
+                    state = sync_func(stream_schemas, repo, state, mdata)
 
                 singer.write_state(state)
 
